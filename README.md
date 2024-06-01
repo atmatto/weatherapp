@@ -4,6 +4,24 @@
 
 Run the `dev.sh` script to start up the development environment. This hosts the frontend on port 8000 and exposes the API on port 9000. Hot reload is enabled.
 
+## Production
+
+Static files are served using Nginx in a Docker container. API server is run in another Docker container. They are coordinated using Docker Compose and exposed to the Internet with a Caddy reverse proxy. Everything is managed using a Systemd service and will run automatically after a reboot.
+
+### Server setup
+
+A minimized installation of Ubuntu Server (e.g. version 24.04) with at least 15GB of disk space is recommended. OpenSSH needs to be installed.
+
+An SSH key pair is needed for Ansible. You can generate it locally using `ssh-keygen -t ed25519` and upload to the server with `ssh-copy-id -i id_ed25519.pub username@server.ip.address` (with proper data inserted).
+
+Update the data in `ansible/inventory.yaml` and check if everything works using `ansible prod -m ping -i inventory.yaml`.
+
+The user used for Ansible must be allowed to use `sudo` without password. For example use `sudo visudo` and modify one of the lines to be: `%sudo ALL=(ALL:ALL) NOPASSWD:ALL`.
+
+### Deployment
+
+If needed, update the server IP address and other data in `ansible/inventory.yaml`. Ansible must be [installed](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) locally. Use the `deploy.sh` script to upload the latest commit on the `main` branch to the server, prepare everything and run the application.
+
 ## Backend
 
 ### Usage

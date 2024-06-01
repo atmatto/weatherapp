@@ -1,0 +1,16 @@
+[Unit]
+Description=Weather app
+After=network.target
+Requires=caddy.service
+After=caddy.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=/home/atmatto/app
+User=atmatto
+ExecStart=/home/atmatto/app/prod.sh
+ExecStop=/home/atmatto/app/prod.sh stop
+
+[Install]
+WantedBy=multi-user.target

@@ -1,11 +1,11 @@
 const webpack = require('webpack');
 const path = require('path');
 
-const TransferWebpackPlugin = require('transfer-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const GLOBALS = {
-  'process.env.ENDPOINT': JSON.stringify(process.env.ENDPOINT || 'http://0.0.0.0:9000/api'),
+  'process.env.ENDPOINT': JSON.stringify(process.env.ENDPOINT || '/api'),
 };
 
 module.exports = {
@@ -49,7 +49,9 @@ module.exports = {
       filename: 'index.html',
     }),
     new webpack.NoEmitOnErrorsPlugin(),
-    new TransferWebpackPlugin([{ from: 'src/public' }], '.'),
+    new CopyWebpackPlugin({
+      patterns: [{ from: 'src/public' }]
+    }),
     new webpack.DefinePlugin(GLOBALS),
   ],
 };

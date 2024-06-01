@@ -19,10 +19,9 @@ FROM base AS build
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=package-lock.json,target=package-lock.json \
     --mount=type=cache,target=/root/.npm \
-    npm ci --omit=dev
-USER node
+    npm ci
 COPY . .
-CMD npm run build
+RUN npm run build
 
 FROM nginx AS prod
 COPY --from=build /usr/src/frontend/dist /usr/share/nginx/html

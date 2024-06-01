@@ -1,0 +1,90 @@
+---
+- name: Prepare the application
+  hosts: localhost
+  tasks:
+    - name: Pack the repository
+      shell:
+        cmd: git archive -o ansible/app.tar.gz --prefix=app/ --add-file=owm-appid.txt main
+        chdir: ..
+- name: Upload the project
+  hosts: prod
+  tasks:
+    - name: Upload
+      copy:
+        src: app.tar.gz
+        dest: ~/
+    - name: Remove previous version
+      command: rm -rf app
+    - name: Unpack
+      command: tar xzf app.tar.gz
+    - name: Clean up
+      command: rm app.tar.gz
+- name: Prepare the environment
+  hosts: prod
+  become: true
+  tasks:
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    - name: Add Docker Apt repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+    - name: Install Docker
+      apt:
+        state: latest
+        pkg:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+    - name: Allow user to use docker
+      user:
+        name: atmatto
+        groups: docker
+        append: true
+    - name: Install necessary packages
+      apt:
+        state: latest
+        pkg:
+        - debian-keyring
+        - debian-archive-keyring
+        - apt-transport-https
+    - name: Add Caddy GPG key
+      apt_key:
+        url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
+        state: present
+    - name: Add Caddy Apt repository
+      apt_repository:
+        repo: deb https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main
+        state: present
+    - name: Install Caddy
+      apt:
+        state: latest
+        pkg:
+        - caddy
+- name: Prepare the containers
+  hosts: prod
+  tasks:
+    - name: Reclaim disk space
+      command: docker system prune -f
+    - name: Build the images
+      command:
+        cmd: docker compose -f compose.prod.yaml build --no-cache
+        chdir: app
+- name: Run the app
+  hosts: prod
+  become: true
+  tasks:
+    - name: Install the service
+      copy:
+        src: weatherapp.service
+        dest: /etc/systemd/system
+    - name: Run the service
+      systemd_service:
+        name: weatherapp
+        state: restarted
+        daemon_reload: true
+        enabled: true
