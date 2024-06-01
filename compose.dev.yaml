@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    ports:
+      - 9000:9000
+    environment:
+      PORT: '9000'
+      APPID_FILE: '/run/secrets/owm_appid'
+    secrets:
+      - owm_appid
+    volumes:
+      - ./backend/src:/usr/src/backend/src
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    ports:
+      - 8000:8000
+    environment:
+      HOST: '0.0.0.0'
+      PORT: '8000'
+      ENDPOINT: 'http://0.0.0.0:9000/api'
+    volumes:
+      - ./frontend/src:/usr/src/frontend/src
+secrets:
+  owm_appid:
+    file: owm-appid.txt

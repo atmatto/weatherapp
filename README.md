@@ -1,5 +1,9 @@
 # Weather App
 
+## Development
+
+Run the `dev.sh` script to start up the development environment. This hosts the frontend on port 8000 and exposes the API on port 9000. Hot reload is enabled.
+
 ## Backend
 
 ### Usage
@@ -10,7 +14,8 @@
 
 ### Environment variables
 
-- APPID – OpenWeatherMap API key
+- APPID_FILE – Path to a file containing the OpenWeatherMap API key (optional)
+- APPID — OpenWeatherMap API key (this overrides the value from APPID_FILE)
 - MAP_ENDPOINT – `http://api.openweathermap.org/data/2.5`
 - TARGET_CITY – `Helsinki,fi`
 - PORT – 9000

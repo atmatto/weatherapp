@@ -1,11 +1,17 @@
 const debug = require('debug')('weathermap');
+const fs = require('fs');
 
 const Koa = require('koa');
 const router = require('koa-router')();
 const fetch = require('node-fetch');
 const cors = require('kcors');
 
-const appId = process.env.APPID || '';
+const appIdFile = process.env.APPID_FILE || '';
+let defaultAppId = '';
+if (appIdFile !== '') {
+  defaultAppId = fs.readFileSync(appIdFile, 'utf8').trim();
+}
+const appId = process.env.APPID || defaultAppId;
 const mapURI = process.env.MAP_ENDPOINT || "http://api.openweathermap.org/data/2.5";
 const targetCity = process.env.TARGET_CITY || "Helsinki,fi";
 
