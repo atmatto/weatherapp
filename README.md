@@ -4,7 +4,7 @@
 
 Run the `dev.sh` script to start up the development environment. This hosts the frontend on port 8000 and exposes the API on port 9000. Hot reload is enabled.
 
-Use the `./dev.sh build` command to force Docker to build the images. Insert the OpenWeatherMap API key into the file `owm-appid.txt` for everything to be functional.
+Use the `./dev.sh build` command to force Docker to build the images. Remember to insert the OpenWeatherMap API key into the file `owm-appid.txt` for everything to be functional.
 
 ## Production
 
@@ -19,6 +19,8 @@ The deployment has been tested on Ubuntu 24.04 Minimal. At least 5 GB of disk sp
 
 Insert the OpenWeatherMap API key into the file `owm-appid.txt`.
 
+Run `terraform init` in the `terraform/` directory.
+
 Insert AWS API keys into the files named `terraform/aws_*_key` and run the `setup-server.sh` script. This will set up the required AWS infrastructure using terraform (`terraform/`). The file `ansible/inventory.yaml` will be automatically generated and the old one backed up.
 
 The server is automatically configured using a [cloud-init](https://cloud-init.io/) file. The only thing that is left is running the script `deploy.sh` which runs the Ansible playbook. It uploads the latest commit on the `main` branch to the server, prepares everything and runs the application.
@@ -29,7 +31,7 @@ To manually inspect the server, connect to it using SSH to the account `maintain
 
 The `vm/` directory contains everything needed to simulate a real cloud server using QEMU/KVM. The directory contains an SSH key pair (`id_ed25519`) to be used only for testing purposes. The file `user-data` is identical to the file `terraform/cloud-init.yaml`, but contains the private key.
 
-Run `./qemu.sh setup` to download the OS image and generate a disk image containing cloud-init files. Then, use `./qemu.sh run` command to turn on the VM. Use the `deploy.sh` script to deploy the application to the VM using the real Ansible playbook. The application will be exposed on `localhost:2280`. Use the `connect.sh` script to inspect the VM with SSH.
+Run `./qemu.sh setup` to download the OS image and generate a disk image containing cloud-init files. Then, use `./qemu.sh run` command to turn on the VM. Use the `deploy.sh` script (from the `vm/` directory) to deploy the application to the VM using the real Ansible playbook. The application will be exposed on `localhost:2280` (forwarded from port 80 on the VM). Use the `connect.sh` script to inspect the VM with SSH.
 
 ## Backend
 
