@@ -7,10 +7,10 @@ After=caddy.service
 [Service]
 Type=oneshot
 RemainAfterExit=true
-WorkingDirectory=/home/atmatto/app
-User=atmatto
-ExecStart=/home/atmatto/app/prod.sh
-ExecStop=/home/atmatto/app/prod.sh stop
+WorkingDirectory=/home/app/app
+User=app
+ExecStart=/home/app/app/prod.sh
+ExecStop=/home/app/app/prod.sh stop
 
 [Install]
 WantedBy=multi-user.target

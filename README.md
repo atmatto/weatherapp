@@ -4,23 +4,32 @@
 
 Run the `dev.sh` script to start up the development environment. This hosts the frontend on port 8000 and exposes the API on port 9000. Hot reload is enabled.
 
+Use the `./dev.sh build` command to force Docker to build the images. Insert the OpenWeatherMap API key into the file `owm-appid.txt` for everything to be functional.
+
 ## Production
 
-Static files are served using Nginx in a Docker container. API server is run in another Docker container. They are coordinated using Docker Compose and exposed to the Internet with a Caddy reverse proxy. Everything is managed using a Systemd service and will run automatically after a reboot.
+Static files are served using Nginx in a Docker container. API server is run in another Docker container. They are coordinated using Docker Compose and exposed to the Internet with a [Caddy](https://caddyserver.com/) reverse proxy. The UFW firewall is used for protection. Everything is managed using a Systemd service (`ansible/weatherapp.service`; it uses the `prod.sh` script to turn the app on and off) and will run automatically after a reboot.
 
-### Server setup
+## Deployment
 
-A minimized installation of Ubuntu Server (e.g. version 24.04) with at least 15GB of disk space is recommended. OpenSSH needs to be installed.
+> [!IMPORTANT]
+> The AWS deployment has not been tested yet. The VM can be used instead.
 
-An SSH key pair is needed for Ansible. You can generate it locally using `ssh-keygen -t ed25519` and upload to the server with `ssh-copy-id -i id_ed25519.pub username@server.ip.address` (with proper data inserted).
+The deployment has been tested on Ubuntu 24.04 Minimal. At least 5 GB of disk space is recommended.
 
-Update the data in `ansible/inventory.yaml` and check if everything works using `ansible prod -m ping -i inventory.yaml`.
+Insert the OpenWeatherMap API key into the file `owm-appid.txt`.
 
-The user used for Ansible must be allowed to use `sudo` without password. For example use `sudo visudo` and modify one of the lines to be: `%sudo ALL=(ALL:ALL) NOPASSWD:ALL`.
+Insert AWS API keys into the files named `terraform/aws_*_key` and run the `setup-server.sh` script. This will set up the required AWS infrastructure using terraform (`terraform/`). The file `ansible/inventory.yaml` will be automatically generated and the old one backed up.
 
-### Deployment
+The server is automatically configured using a [cloud-init](https://cloud-init.io/) file. The only thing that is left is running the script `deploy.sh` which runs the Ansible playbook. It uploads the latest commit on the `main` branch to the server, prepares everything and runs the application.
 
-If needed, update the server IP address and other data in `ansible/inventory.yaml`. Ansible must be [installed](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) locally. Use the `deploy.sh` script to upload the latest commit on the `main` branch to the server, prepare everything and run the application.
+To manually inspect the server, connect to it using SSH to the account `maintainer`, using an appropriate private key.
+
+### Test virtual machine
+
+The `vm/` directory contains everything needed to simulate a real cloud server using QEMU/KVM. The directory contains an SSH key pair (`id_ed25519`) to be used only for testing purposes. The file `user-data` is identical to the file `terraform/cloud-init.yaml`, but contains the private key.
+
+Run `./qemu.sh setup` to download the OS image and generate a disk image containing cloud-init files. Then, use `./qemu.sh run` command to turn on the VM. Use the `deploy.sh` script to deploy the application to the VM using the real Ansible playbook. The application will be exposed on `localhost:2280`. Use the `connect.sh` script to inspect the VM with SSH.
 
 ## Backend
 
@@ -32,11 +41,11 @@ If needed, update the server IP address and other data in `ansible/inventory.yam
 
 ### Environment variables
 
-- APPID_FILE – Path to a file containing the OpenWeatherMap API key (optional)
-- APPID — OpenWeatherMap API key (this overrides the value from APPID_FILE)
-- MAP_ENDPOINT – `http://api.openweathermap.org/data/2.5`
-- TARGET_CITY – `Helsinki,fi`
-- PORT – 9000
+- `APPID_FILE` – Path to a file containing the OpenWeatherMap API key (optional)
+- `APPID` – OpenWeatherMap API key (this overrides the value from APPID_FILE)
+- `MAP_ENDPOINT` – `http://api.openweathermap.org/data/2.5`
+- `TARGET_CITY` – `Helsinki,fi`
+- `PORT` – 9000
 
 ### API
 
@@ -52,6 +61,11 @@ If needed, update the server IP address and other data in `ansible/inventory.yam
 
 ### Environment variables
 
-- HOST (devServer) – `0.0.0.0`
-- PORT (devServer) – `8000`
-- ENDPOINT – base URL, should end with `/api`, default: `http://0.0.0.0:9000/api`
+- `HOST` (devServer) – `0.0.0.0`
+- `PORT` (devServer) – `8000`
+- `ENDPOINT` – base URL, should end with `/api`, default: `http://0.0.0.0:9000/api`
+
+## Possible improvements:
+
+- Deploy the application to a real AWS EC2 instance. Connect a domain and configure Caddy to get an SSL certificate and use HTTPS.
+- Make a better Systemd service which would check the status of the application and restart it automatically in case of any issues.

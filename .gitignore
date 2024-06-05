@@ -1,0 +1,5 @@
+owm-appid.txt
+ansible/app.tar.gz
+frontend/dist
+**/node_modules
+vm/*.img

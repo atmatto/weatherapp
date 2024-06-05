@@ -7,22 +7,68 @@
         cmd: git archive -o ansible/app.tar.gz --prefix=app/ --add-file=owm-appid.txt main
         chdir: ..
 - name: Upload the project
+  become: true
   hosts: prod
   tasks:
     - name: Upload
       copy:
         src: app.tar.gz
-        dest: ~/
+        dest: /home/app/
     - name: Remove previous version
-      command: rm -rf app
+      command:
+        cmd: rm -rf app
+        chdir: /home/app/
     - name: Unpack
-      command: tar xzf app.tar.gz
+      command: 
+        cmd: tar xzf app.tar.gz
+        chdir: /home/app/
     - name: Clean up
-      command: rm app.tar.gz
+      command:
+        cmd: rm app.tar.gz
+        chdir: /home/app/
+    - name: Change ownership
+      command:
+        cmd: "chown -R app: /home/app/app"
+- name: Set up firewall
+  hosts: prod
+  become: true
+  tasks:
+    - name: Install ufw
+      apt:
+        state: latest
+        pkg:
+        - ufw
+    - name: Allow SSH
+      ufw:
+        rule: allow
+        name: OpenSSH
+    - name: Allow HTTP
+      ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
+    - name: Allow HTTPS
+      ufw:
+        rule: allow
+        port: '443'
+        proto: tcp
+    - name: Enable ufw
+      ufw:
+        state: enabled
+        policy: reject
 - name: Prepare the environment
   hosts: prod
   become: true
   tasks:
+    - name: Install necessary packages
+      apt:
+        state: latest
+        pkg:
+        - debian-keyring
+        - debian-archive-keyring
+        - apt-transport-https
+        - pgp
+        - acl
     - name: Add Docker GPG key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
@@ -40,18 +86,6 @@
         - containerd.io
         - docker-buildx-plugin
         - docker-compose-plugin
-    - name: Allow user to use docker
-      user:
-        name: atmatto
-        groups: docker
-        append: true
-    - name: Install necessary packages
-      apt:
-        state: latest
-        pkg:
-        - debian-keyring
-        - debian-archive-keyring
-        - apt-transport-https
     - name: Add Caddy GPG key
       apt_key:
         url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
@@ -71,9 +105,11 @@
     - name: Reclaim disk space
       command: docker system prune -f
     - name: Build the images
+      become: true
+      become_user: app
       command:
         cmd: docker compose -f compose.prod.yaml build --no-cache
-        chdir: app
+        chdir: /home/app/app
 - name: Run the app
   hosts: prod
   become: true

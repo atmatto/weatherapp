@@ -1,6 +1,6 @@
 prod:
   hosts:
-    vm:
-      ansible_host: 192.168.122.23
-      ansible_user: atmatto
-      ansible_ssh_private_key_file: ./id_ed25519
+    server:
+      ansible_host: INSERT IP ADDRESS HERE
+      ansible_user: maintainer
+      ansible_ssh_private_key_file: ../id_ed25519
