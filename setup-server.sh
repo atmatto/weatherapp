@@ -7,7 +7,7 @@ terraform apply
 
 echo "Updating Ansible inventory"
 mv -f ../ansible/inventory.yaml ../ansible/inventory.yaml.bkp
-echo > ../ansible/inventory.yaml <<END
+cat > ../ansible/inventory.yaml <<END
 prod:
   hosts:
     server:

@@ -1,4 +1,5 @@
 owm-appid.txt
+id_ed25519
 ansible/app.tar.gz
 frontend/dist
 **/node_modules

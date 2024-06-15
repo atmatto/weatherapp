@@ -1,4 +1,4 @@
-:80 {
+:80, wa.atmatto.org {
 	reverse_proxy /api/* :9000
 	reverse_proxy :8000
 }

@@ -1,5 +1,8 @@
 # Weather App
 
+> [!NOTE]
+> The application is deployed on an AWS EC2 instance. It is available on [wa.atmatto.org](https://wa.atmatto.org). To connect for administration purposes, use the command `ssh -i FILE_CONTAINING_PRIVATE_KEY maintainer@wa.atmatto.org`.
+
 ## Development
 
 Run the `dev.sh` script to start up the development environment. This hosts the frontend on port 8000 and exposes the API on port 9000. Hot reload is enabled.
@@ -12,9 +15,6 @@ Static files are served using Nginx in a Docker container. API server is run in 
 
 ## Deployment
 
-> [!IMPORTANT]
-> The AWS deployment has not been tested yet. The VM can be used instead.
-
 The deployment has been tested on Ubuntu 24.04 Minimal. At least 5 GB of disk space is recommended.
 
 Insert the OpenWeatherMap API key into the file `owm-appid.txt`.
@@ -22,6 +22,8 @@ Insert the OpenWeatherMap API key into the file `owm-appid.txt`.
 Run `terraform init` in the `terraform/` directory.
 
 Insert AWS API keys into the files named `terraform/aws_*_key` and run the `setup-server.sh` script. This will set up the required AWS infrastructure using terraform (`terraform/`). The file `ansible/inventory.yaml` will be automatically generated and the old one backed up.
+
+To ensure proper configuration of HTTPS, add an `A` DNS record for your domain pointing to the newly created EC2 instance's public IP address. Then, update the domain name in `Caddyfile`. Caddy will automatically configure the required certificates.
 
 The server is automatically configured using a [cloud-init](https://cloud-init.io/) file. The only thing that is left is running the script `deploy.sh` which runs the Ansible playbook. It uploads the latest commit on the `main` branch to the server, prepares everything and runs the application.
 
@@ -69,5 +71,5 @@ Run `./qemu.sh setup` to download the OS image and generate a disk image contain
 
 ## Possible improvements:
 
-- Deploy the application to a real AWS EC2 instance. Connect a domain and configure Caddy to get an SSL certificate and use HTTPS.
 - Make a better Systemd service which would check the status of the application and restart it automatically in case of any issues.
+- Enhance the monitoring and logging of the application.
