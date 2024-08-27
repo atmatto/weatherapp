@@ -1,8 +1,5 @@
 # Weather App
 
-> [!NOTE]
-> The application is deployed on an AWS EC2 instance. It is available on [wa.atmatto.org](https://wa.atmatto.org). To connect for administration purposes, use the command `ssh -i FILE_CONTAINING_PRIVATE_KEY maintainer@wa.atmatto.org`.
-
 ## Development
 
 Run the `dev.sh` script to start up the development environment. This hosts the frontend on port 8000 and exposes the API on port 9000. Hot reload is enabled.
